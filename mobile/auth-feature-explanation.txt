@@ -1,0 +1,311 @@
+AUTH FEATURE — FULL EXPLANATION
+=================================
+
+This document explains the authentication system in plain English.
+No code knowledge is needed. It describes what each file does, how
+the screens connect, and what happens when you click buttons.
+
+
+1. THE BIG PICTURE (folder structure)
+--------------------------------------
+
+The auth feature lives in two places:
+
+  src/app/(auth)/       →  Navigation only
+  src/features/auth/    →  All the actual logic and screens
+
+Why two folders?
+
+  - src/app/ is Expo Router's special folder. It defines which URLs
+    exist and what screen to show for each URL. It also handles
+    redirects (like: "if already signed in, skip auth and go home").
+
+  - src/features/auth/ is where the REAL code lives: what buttons
+    look like, what happens when you type your email, how Clerk
+    (the login service) gets called, etc.
+
+The files in src/app/(auth)/ are just ONE LINE each — they point to
+the real screen in src/features/auth/screens/. This keeps navigation
+separate from actual code.
+
+
+2. NAVIGATION FLOW (how screens are connected)
+-----------------------------------------------
+
+Imagine opening the app for the first time:
+
+  Step 1:  src/app/_layout.tsx runs first
+           It wraps the whole app in ClerkProvider, which is like
+           plugging the app into the Clerk authentication service.
+           Without this, nothing auth-related would work.
+
+  Step 2:  The app tries to show the auth screens
+           src/app/(auth)/_layout.tsx checks: are you already
+           signed in? If YES → redirect to home page, skip auth.
+           If NO → show the auth screens (sign-in first).
+           It also tells the navigator "start at sign-in, not
+           anywhere else" so the verify screen doesn't appear
+           by accident. This is the "initialRouteName" setting.
+
+  Step 3:  The URL tells Expo Router which screen to load
+           /sign-in  → loads src/app/(auth)/sign-in.tsx
+                       which immediately redirects to the real
+                       screen in features/auth/screens/SignInScreen.tsx
+           /sign-up  → same pattern
+           /verify   → same pattern (this is a stub/placeholder)
+
+
+3. SIGN IN FLOW (what happens when you sign in)
+-----------------------------------------------
+
+Here is exactly what happens, start to finish:
+
+  A. You see a screen with two text boxes and a button
+     - Email address box
+     - Password box
+     - "Continue" button
+     - A link that says "Don't have an account? Sign up"
+
+  B. You type your email + password and tap "Continue"
+
+  C. The SignInForm component (which is JUST the visual part)
+     tells the useSignIn hook: "the user tapped Continue with
+     these values".
+
+  D. The useSignIn hook asks Clerk to check the email and
+     password. Clerk is an external service that stores user
+     accounts securely.
+
+  E. Three things can happen next:
+
+     CASE 1 — Login successful:
+       Clerk says "this email+password is correct".
+       The hook calls finalizeNavigation, which redirects
+       you to the home page "/". You are now signed in.
+
+     CASE 2 — Extra verification needed:
+       Clerk says "the password is correct, but we need to
+       verify your identity with a code sent to your email"
+       (this is called "needs_client_trust" or MFA).
+       The screen switches from SignInForm to VerifyForm.
+       You get a text box for the verification code.
+
+       You enter the code and tap "Verify".
+       The hook sends the code to Clerk for confirmation.
+       If correct → you get redirected home.
+       You can also tap "I need a new code" to resend, or
+       "Start over" to go back to the email+password form.
+
+     CASE 3 — Wrong credentials:
+       Clerk says "invalid email or password".
+       An error message appears below the input boxes.
+       Nothing else happens — you try again.
+
+  F. While waiting for Clerk to respond, the "Continue" or
+     "Verify" button becomes grayed out so you can't tap it
+     twice. This is the "fetchStatus === 'fetching'" check.
+
+
+4. SIGN UP FLOW (creating a new account)
+----------------------------------------
+
+  A. You see: email box, password box, "Sign up" button, and
+     a link "Already have an account? Sign in".
+
+  B. You fill in your email + password and tap "Sign up".
+
+  C. Clerk receives your info and sends a verification code
+     to your email address.
+
+  D. The screen switches from the sign-up form to a verification
+     form (the same VerifyForm component used in sign-in).
+
+  E. You check your email, copy the code, paste it, and tap
+     "Verify".
+
+  F. Clerk confirms the code, creates your account, and you
+     get redirected to the home page.
+
+  G. If something is wrong (invalid email, weak password, etc.),
+     error messages appear below the relevant boxes.
+
+  H. While waiting, buttons are disabled to prevent double-taps.
+
+
+5. EVERY FILE EXPLAINED (simple terms)
+---------------------------------------
+
+  src/features/auth/screens/SignInScreen.tsx
+    The "manager" for sign-in. It uses the useSignIn hook to get
+    all the data (email, password, code, errors) and all the
+    actions (handleSubmit, handleVerify). It decides whether to
+    show the login form or the verification form based on what
+    Clerk says. It also places the "Don't have an account?" link.
+
+  src/features/auth/screens/SignUpScreen.tsx
+    Same as above, but for sign-up. It uses useSignUp instead.
+    It decides: show sign-up form, show verification form, or
+    show nothing (if already signed up).
+
+  src/features/auth/screens/VerifyScreen.tsx
+    A placeholder. Currently just shows the word "verify".
+    Not used by the normal flow — it exists as a separate route
+    in case you need to navigate to it directly.
+
+  src/features/auth/hooks/useSignIn.ts
+    The BRAIN of sign-in. It holds the state (what's typed in
+    the boxes), calls Clerk's functions, handles responses,
+    and returns everything the screen needs. The screen doesn't
+    know how Clerk works — it just calls the hook.
+
+  src/features/auth/hooks/useSignUp.ts
+    Same as above but for sign-up. Also adds two extra flags:
+    isComplete (true when sign-up is done) and needsVerification
+    (true when a verification code is needed).
+
+  src/features/auth/components/SignInForm.tsx
+    Just the visual form: two text inputs, a button, error
+    messages. It has NO logic — it receives everything from
+    the screen via props (the function arguments). It only
+    knows how to LOOK, not how to THINK.
+
+  src/features/auth/components/SignUpForm.tsx
+    Same as SignInForm but for sign-up. The text says "Sign up"
+    instead of "Continue", and error messages check different
+    field names.
+
+  src/features/auth/components/VerifyForm.tsx
+    The verification code form: one text input for the code,
+    a "Verify" button, optional "I need a new code" and
+    "Start over" buttons. Also has no logic — receives
+    everything via props.
+
+  src/features/auth/components/AuthLink.tsx
+    A small reusable piece: a sentence + a clickable link.
+    Example: "Don't have an account? Sign up".
+    It receives the text and the destination as inputs.
+
+  src/features/auth/utils.ts
+    A tiny helper that handles navigation after successful
+    login/signup. It tells Expo Router to go to the home
+    page ("/"). If the URL looks like a web address, it
+    uses the browser instead.
+
+  src/features/auth/types.ts
+    Defines what data the forms hold: an email address,
+    a password, and a verification code. Just descriptions
+    of the data shapes — no actual logic.
+
+
+6. HOW DATA FLOWS BETWEEN FILES
+---------------------------------
+
+  User taps button
+       │
+       ▼
+  Component (e.g. SignInForm)
+    ── calls → onSubmit prop (given by the Screen)
+       │
+       ▼
+  Screen (e.g. SignInScreen)
+    ── calls → hook function (e.g. handleSubmit from useSignIn)
+       │
+       ▼
+  Hook (e.g. useSignIn)
+    ── calls → Clerk service (external)
+       │
+       ▼
+  Clerk responds
+       │
+       ▼
+  Hook updates state (email, password, errors, status)
+       │
+       ▼
+  Screen re-renders (because state changed)
+       │
+       ▼
+  Component shows new UI (error message, or switches to verify form,
+  or navigates away to home)
+
+  The key rule: components NEVER call Clerk directly. They only
+  call functions given to them by the screen. The screen only
+  calls the hook. The hook talks to Clerk. This keeps things
+  organized and testable.
+
+
+7. WHAT IS CLERK?
+-----------------
+
+  Clerk is an external service (like Google or Facebook login)
+  that handles user accounts for you.
+
+  It stores:
+    - User emails and passwords (securely encrypted)
+    - Who is signed in right now
+    - Session tokens (proof that you are logged in)
+
+  It provides functions like:
+    - "Check if this email+password is correct"
+    - "Send a verification code to this email"
+    - "Create a new account with this email+password"
+    - "Sign this user out"
+
+  The app uses Clerk through the "@clerk/expo" package.
+  The hooks (useSignIn, useSignUp) wrap Clerk's functions
+  so the rest of the app doesn't need to know Clerk exists.
+
+
+8. WHY DOES VERIFY APPEAR FIRST (fixed now)
+--------------------------------------------
+
+  Expo Router shows screens in alphabetical order by default.
+  "verify" comes before "sign-in" alphabetically, so it was
+  showing up first.
+
+  The fix: in src/app/(auth)/_layout.tsx, we added:
+    initialRouteName="sign-in"
+  This tells the navigator "always start at sign-in, ignore
+  alphabetical order". Now the app always opens to sign-in
+  first. The verify screen only appears when Clerk asks for
+  a verification code during login or sign-up.
+
+
+9. FOLDER STRUCTURE REFERENCE
+------------------------------
+
+  src/app/_layout.tsx
+    Root layout. Wraps everything in ClerkProvider.
+
+  src/app/(auth)/_layout.tsx
+    Auth group layout. Checks if signed in. If yes → redirect to home.
+    If no → show auth screens, starting with sign-in.
+
+  src/app/(auth)/sign-in.tsx
+    1 line. Points to the real sign-in screen.
+
+  src/app/(auth)/sign-up.tsx
+    1 line. Points to the real sign-up screen.
+
+  src/app/(auth)/verify.tsx
+    1 line. Points to the verify screen (placeholder).
+
+  src/features/auth/
+    screens/          → The "managers" — decide what to show
+      SignInScreen.tsx
+      SignUpScreen.tsx
+      VerifyScreen.tsx
+
+    hooks/            → The "brains" — hold state, call Clerk
+      useSignIn.ts
+      useSignUp.ts
+
+    components/       → The "faces" — just the visual UI
+      SignInForm.tsx
+      SignUpForm.tsx
+      VerifyForm.tsx
+      AuthLink.tsx
+
+    utils.ts          → Navigation helper
+    types.ts          → Data descriptions
+    services/         → (empty, ready for API calls)
+    store/            → (empty, ready for state management)
