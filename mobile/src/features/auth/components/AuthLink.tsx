@@ -10,9 +10,9 @@ interface AuthLinkProps {
 export function AuthLink({ question, label, href }: AuthLinkProps) {
   return (
     <View style={styles.container}>
-      <Text>{question} </Text>
-      <Link href={href as any}>
-        <Text>{label}</Text>
+      <Text style={styles.text}>{question} </Text>
+      <Link href={href as any} replace>
+        <Text style={styles.link}>{label}</Text>
       </Link>
     </View>
   );
@@ -22,7 +22,15 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     gap: 4,
-    marginTop: 12,
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  link: {
+    color: '#8b593f',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  text: {
+    fontSize: 14,
   },
 });

@@ -12,5 +12,12 @@ export default function AuthRoutesLayout() {
     return <Redirect href="/" />;
   }
 
-  return <Stack initialRouteName="sign-in" />;
+  return (
+    <Stack
+      initialRouteName="sign-in"
+      screenOptions={{
+        headerShown: false,
+      }}
+    />
+  );
 }

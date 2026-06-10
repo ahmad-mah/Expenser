@@ -1,36 +1,44 @@
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useSignUp as useClerkSignUp } from '@clerk/expo';
 import { useRouter } from 'expo-router';
+import { signUpSchema, type SignUpForm } from '../schemas/signUp.schema';
 
 export function useSignUp() {
-  const { signUp, errors, fetchStatus } = useClerkSignUp();
+  const { signUp, fetchStatus } = useClerkSignUp();
   const router = useRouter();
 
-  const [emailAddress, setEmailAddress] = useState('');
-  const [password, setPassword] = useState('');
+  const { control, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm<SignUpForm>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: { email: '', password: '' },
+  });
 
-  const handleSubmit = async () => {
-    const { error } = await signUp.password({
-      emailAddress,
-      password,
+  const onSubmit = handleSubmit(async (data) => {
+    const { error } = await signUp.create({
+      emailAddress: data.email,
+      password: data.password,
     });
+
     if (error) {
-      console.error(JSON.stringify(error, null, 2));
+      const clerkErrors = 'errors' in error ? (error as any).errors : [error];
+      for (const err of clerkErrors) {
+        const field = err.meta?.paramName === 'email_address' ? 'email'
+          : err.meta?.paramName === 'password' ? 'password'
+          : 'root';
+        setError(field, { message: err.message });
+      }
       return;
     }
 
     await signUp.verifications.sendEmailCode();
     router.push('/verify?type=signup');
-  };
+  });
 
   return {
-    emailAddress,
-    setEmailAddress,
-    password,
-    setPassword,
+    control,
     errors,
     fetchStatus,
-    signUp,
-    handleSubmit,
+    isSubmitting,
+    onSubmit,
   };
 }

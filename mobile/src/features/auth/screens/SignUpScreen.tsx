@@ -1,30 +1,28 @@
+import { StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSignUp } from '../hooks/useSignUp';
-import { SignUpForm } from '../components/SignUpForm';
-import { AuthLink } from '../components/AuthLink';
+import { AuthForm } from '../components/AuthForm';
 
 export default function SignUpScreen() {
-  const {
-    emailAddress,
-    setEmailAddress,
-    password,
-    setPassword,
-    errors,
-    fetchStatus,
-    handleSubmit,
-  } = useSignUp();
+  const { control, errors, fetchStatus, isSubmitting, onSubmit } = useSignUp();
 
   return (
-    <>
-      <SignUpForm
-        emailAddress={emailAddress}
-        onEmailChange={setEmailAddress}
-        password={password}
-        onPasswordChange={setPassword}
+    <SafeAreaView style={styles.screen}>
+      <AuthForm
+        mode="signup"
+        control={control}
         errors={errors}
         fetchStatus={fetchStatus}
-        onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
+        onSubmit={onSubmit}
       />
-      <AuthLink question="Already have an account?" label="Sign in" href="/sign-in" />
-    </>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    paddingHorizontal: 24,
+  },
+});

@@ -1,5 +1,6 @@
-import React from 'react';
-import { Pressable, StyleSheet, TextInput, View, Text } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, TextInput, Text, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import Gap from '@/shared/ui/Gap';
 
 interface VerifyFormProps {
   code: string;
@@ -8,7 +9,6 @@ interface VerifyFormProps {
   fetchStatus: string;
   onVerify: () => void;
   onResendCode?: () => void;
-  onReset?: () => void;
   title?: string;
 }
 
@@ -19,82 +19,91 @@ export function VerifyForm({
   fetchStatus,
   onVerify,
   onResendCode,
-  onReset,
-  title = 'Verify your account',
+  title = 'Verify your email',
 }: VerifyFormProps) {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
-        {title}
-      </Text>
-      <TextInput
-        style={styles.input}
-        value={code}
-        placeholder="Enter your verification code"
-        placeholderTextColor="#666666"
-        onChangeText={onCodeChange}
-        keyboardType="numeric"
-      />
-      {errors.fields.code && (
-        <Text style={styles.error}>{errors.fields.code.message}</Text>
-      )}
-      <Pressable
-        style={({ pressed }) => [
-          styles.button,
-          fetchStatus === 'fetching' && styles.buttonDisabled,
-          pressed && styles.buttonPressed,
-        ]}
-        onPress={onVerify}
-        disabled={fetchStatus === 'fetching'}
+    <View style={styles.root}>
+      <KeyboardAwareScrollView
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps={'handled'}
+        bottomOffset={32}
+        extraKeyboardSpace={32}
+        contentContainerStyle={styles.scrollContent}
       >
-        <Text style={styles.buttonText}>Verify</Text>
-      </Pressable>
-      {onResendCode && (
-        <Pressable
-          style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
-          onPress={onResendCode}
-        >
-          <Text style={styles.secondaryButtonText}>I need a new code</Text>
-        </Pressable>
-      )}
-      {onReset && (
-        <Pressable
-          style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
-          onPress={onReset}
-        >
-          <Text style={styles.secondaryButtonText}>Start over</Text>
-        </Pressable>
-      )}
+        <View style={styles.container}>
+          <Text style={styles.title}>{title}</Text>
+          <TextInput
+            style={styles.input}
+            value={code}
+            placeholder="Enter your verification code"
+            placeholderTextColor="#797676"
+            textAlign="center"
+            onChangeText={onCodeChange}
+            keyboardType="numeric"
+          />
+          {errors.fields.code && <Text style={styles.error}>{errors.fields.code.message}</Text>}
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.button,
+              fetchStatus === 'fetching' && styles.buttonDisabled,
+              pressed && styles.buttonPressed,
+            ]}
+            onPress={onVerify}
+            disabled={fetchStatus === 'fetching'}
+          >
+            {fetchStatus === 'fetching' ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Verify Email</Text>
+            )}
+          </Pressable>
+          {onResendCode && (
+            <Pressable
+              style={({ pressed }) => [styles.resendButton, pressed && styles.buttonPressed]}
+              onPress={onResendCode}
+            >
+              <Text style={styles.resendButtonText}>I need a new code</Text>
+            </Pressable>
+          )}
+        </View>
+      </KeyboardAwareScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    padding: 20,
-    gap: 12,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  container: {
+    paddingHorizontal: 16,
+    alignItems: 'stretch',
+    gap: 20,
   },
   title: {
     fontSize: 24,
+    color: '#433b37',
     fontWeight: 'bold',
-    marginBottom: 8,
+    textAlign: 'center',
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 12,
+    padding: 14,
     fontSize: 16,
     backgroundColor: '#fff',
   },
   button: {
-    backgroundColor: '#0a7ea4',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 8,
+    backgroundColor: '#8b593f',
+    padding: 14,
+    borderRadius: 12,
+    alignSelf: 'center',
   },
   buttonPressed: {
     opacity: 0.7,
@@ -105,17 +114,17 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontWeight: '600',
+    fontSize: 16,
   },
-  secondaryButton: {
-    paddingVertical: 12,
+  resendButton: {
     paddingHorizontal: 24,
-    borderRadius: 8,
     alignItems: 'center',
-    marginTop: 8,
+    alignSelf: 'center',
   },
-  secondaryButtonText: {
-    color: '#0a7ea4',
+  resendButtonText: {
+    color: '#8b593f',
     fontWeight: '600',
+    fontSize: 14,
   },
   error: {
     color: '#d32f2f',

@@ -1,30 +1,39 @@
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useSignIn as useClerkSignIn } from '@clerk/expo';
 import { useRouter } from 'expo-router';
+import { signInSchema, type SignInForm } from '../schemas/signIn.schema';
 import { finalizeNavigation } from '../utils';
 
 export function useSignIn() {
-  const { signIn, errors, fetchStatus } = useClerkSignIn();
+  const { signIn, fetchStatus } = useClerkSignIn();
   const router = useRouter();
 
-  const [emailAddress, setEmailAddress] = useState('');
-  const [password, setPassword] = useState('');
+  const { control, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm<SignInForm>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: { email: '', password: '' },
+  });
 
-  const handleSubmit = async () => {
-    const { error } = await signIn.password({
-      emailAddress,
-      password,
+  const onSubmit = handleSubmit(async (data) => {
+    const { error } = await signIn.create({
+      identifier: data.email,
+      password: data.password,
     });
+
     if (error) {
-      console.error(JSON.stringify(error, null, 2));
+      const clerkErrors = 'errors' in error ? (error as any).errors : [error];
+      for (const err of clerkErrors) {
+        const field = err.meta?.paramName === 'email_address' ? 'email'
+          : err.meta?.paramName === 'password' ? 'password'
+          : 'root';
+        setError(field, { message: err.message });
+      }
       return;
     }
 
     if (signIn.status === 'complete') {
       await signIn.finalize({
-        navigate: ({ decorateUrl }) => {
-          finalizeNavigation(decorateUrl);
-        },
+        navigate: ({ decorateUrl }) => finalizeNavigation(decorateUrl),
       });
     } else if (signIn.status === 'needs_client_trust') {
       const emailCodeFactor = signIn.supportedSecondFactors.find(
@@ -34,19 +43,14 @@ export function useSignIn() {
         await signIn.mfa.sendEmailCode();
       }
       router.push('/verify?type=signin');
-    } else {
-      console.error('Sign-in attempt not complete:', signIn);
     }
-  };
+  });
 
   return {
-    emailAddress,
-    setEmailAddress,
-    password,
-    setPassword,
+    control,
     errors,
     fetchStatus,
-    signIn,
-    handleSubmit,
+    isSubmitting,
+    onSubmit,
   };
 }

@@ -9,7 +9,6 @@ export default function VerifyScreen() {
     fetchStatus,
     handleVerify,
     handleResendCode,
-    handleReset,
   } = useVerify();
 
   return (
@@ -20,7 +19,6 @@ export default function VerifyScreen() {
       fetchStatus={fetchStatus}
       onVerify={handleVerify}
       onResendCode={handleResendCode}
-      onReset={handleReset}
     />
   );
 }
