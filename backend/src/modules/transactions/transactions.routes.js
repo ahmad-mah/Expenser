@@ -1,13 +1,11 @@
 import { Router } from 'express';
+import transactionController from './transactions.controller.js';
 
 const router = Router();
 
-router.get('/', (req, res) => {});
-
-router.post('/', (req, res) => {});
-
-router.put('/:id', (req, res) => {});
-
-router.delete('/:id', (req, res) => {});
+router.get('/', transactionController.getAll);
+router.post('/', transactionController.create);
+router.put('/:id', transactionController.update);
+router.delete('/:id', transactionController.remove);
 
 export default router;
