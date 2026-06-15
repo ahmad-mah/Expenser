@@ -5,8 +5,13 @@ export function useUserSession() {
   const { user } = useUser();
   const { signOut } = useClerk();
 
+  const displayName =
+    `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim() ||
+    user?.emailAddresses[0]?.emailAddress ||
+    'User';
+
   return {
-    email: user?.emailAddresses[0]?.emailAddress,
+    displayName,
     signOut,
   };
 }

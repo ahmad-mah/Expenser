@@ -22,7 +22,11 @@ This file governs all OpenCode agents and subagents operating in this repository
 * **Verify Destructive Operations**: Always double-check before executing any command that modifies or deletes files/directories outside the workspace or commits to main without checks.
 * **No Side-Effects in PRs**: Do not mutate global configuration files or git settings without explicit instruction.
 
-## 4. Decision-Making Principles
+## 4. Component Design (React Native)
+
+* **Self-Contained Dependencies**: If a component depends on data or logic (e.g. a hook, store, or context) that the parent does not need for its own rendering, consume that dependency directly inside the component instead of threading it through props. Prefer `useUserSession()` inside `HomeHeader` over `<HomeHeader displayName={...} onSignOut={...} />`.
+
+## 5. Decision-Making Principles
 
 * **Read Before Write**: Always read existing implementations, surrounding tests, and package configurations before editing files.
 * **Self-Verification Loop**: After making changes, run the project's linter, tests, and builds to verify stability. Do not rely on assumptions.
