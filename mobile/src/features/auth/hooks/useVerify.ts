@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSignIn, useSignUp } from '@clerk/expo';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { finalizeNavigation } from '../utils';
 
 export function useVerify() {
   const { type } = useLocalSearchParams<{ type: string }>();
@@ -21,25 +20,27 @@ export function useVerify() {
     }
   }, [isValid, router]);
 
+  const navigateHome = useCallback(() => {
+    router.replace('/(home)');
+  }, [router]);
+
   const handleVerify = useCallback(async () => {
     if (!isValid) return;
 
     if (isSignIn) {
       await signIn?.mfa?.verifyEmailCode({ code });
       if (signIn?.status === 'complete') {
-        await signIn.finalize({
-          navigate: ({ decorateUrl }) => finalizeNavigation(decorateUrl),
-        });
+        await signIn.finalize();
+        navigateHome();
       }
     } else {
       await signUp?.verifications?.verifyEmailCode({ code });
       if (signUp?.status === 'complete') {
-        await signUp.finalize({
-          navigate: ({ decorateUrl }) => finalizeNavigation(decorateUrl),
-        });
+        await signUp.finalize();
+        navigateHome();
       }
     }
-  }, [isValid, isSignIn, code, signIn, signUp]);
+  }, [isValid, isSignIn, code, signIn, signUp, navigateHome]);
 
   const handleResendCode = useCallback(async () => {
     if (!isValid) return;

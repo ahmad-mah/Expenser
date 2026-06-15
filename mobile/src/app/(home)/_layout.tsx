@@ -1,16 +1,15 @@
-import { useAuth } from '@clerk/expo'
-import { Redirect, Stack } from 'expo-router'
+import { useAuth } from '@clerk/expo';
+import { Redirect, Stack } from 'expo-router';
 
 export default function Layout() {
-  const { isSignedIn, isLoaded } = useAuth()
+  const { isSignedIn, isLoaded } = useAuth();
 
   if (!isLoaded) {
-    return null
+    return null;
   }
-
   if (!isSignedIn) {
-    return <Redirect href="/sign-in" />
+    return <Redirect href="/sign-in" />;
   }
 
-  return <Stack />
+  return <Stack />;
 }

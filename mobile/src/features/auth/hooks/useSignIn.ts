@@ -3,18 +3,24 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useSignIn as useClerkSignIn } from '@clerk/expo';
 import { useRouter } from 'expo-router';
 import { signInSchema, type SignInForm } from '../schemas/signIn.schema';
-import { finalizeNavigation } from '../utils';
+import { Keyboard } from 'react-native';
 
 export function useSignIn() {
   const { signIn, fetchStatus } = useClerkSignIn();
   const router = useRouter();
 
-  const { control, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm<SignInForm>({
+  const {
+    control,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<SignInForm>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: '', password: '' },
   });
 
   const onSubmit = handleSubmit(async (data) => {
+    Keyboard.dismiss();
     const { error } = await signIn.create({
       identifier: data.email,
       password: data.password,
@@ -23,27 +29,22 @@ export function useSignIn() {
     if (error) {
       const clerkErrors = 'errors' in error ? (error as any).errors : [error];
       for (const err of clerkErrors) {
-        const field = err.meta?.paramName === 'email_address' ? 'email'
-          : err.meta?.paramName === 'password' ? 'password'
-          : 'root';
+        const field =
+          err.meta?.paramName === 'email_address'
+            ? 'email'
+            : err.meta?.paramName === 'password'
+              ? 'password'
+              : 'root';
         setError(field, { message: err.message });
       }
       return;
     }
 
     if (signIn.status === 'complete') {
-      await signIn.finalize({
-        navigate: ({ decorateUrl }) => finalizeNavigation(decorateUrl),
-      });
-    } else if (signIn.status === 'needs_client_trust') {
-      const emailCodeFactor = signIn.supportedSecondFactors.find(
-        (factor) => factor.strategy === 'email_code',
-      );
-      if (emailCodeFactor) {
-        await signIn.mfa.sendEmailCode();
-      }
-      router.push('/verify?type=signin');
+      await signIn.finalize();
     }
+
+    router.replace('/(home)');
   });
 
   return {
