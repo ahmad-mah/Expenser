@@ -1,9 +1,7 @@
 import { sql } from '../../config/db.js';
 
-const getCategories = () => {
-  return;
-
-  sql`
+const getCategories = async () => {
+  return sql`
     SELECT * FROM categories
     ORDER BY name;
     `;

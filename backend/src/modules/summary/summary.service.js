@@ -1,5 +1,4 @@
-
-import * as db from './summary.db.js';
+import db from './summary.db.js';
 
 export const getSummary = async (userId) => {
   const [summary] = await db.getSummary(userId);

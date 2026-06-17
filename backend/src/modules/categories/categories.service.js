@@ -1,7 +1,7 @@
 import db from './categories.db.js';
 
 const getCategories = async () => {
-  return db.getCategories();
+  return await db.getCategories();
 };
 
 export default { getCategories };
