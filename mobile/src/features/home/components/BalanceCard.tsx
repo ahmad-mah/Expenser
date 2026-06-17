@@ -1,5 +1,8 @@
 import { View, Text, StyleSheet } from 'react-native';
 import Gap from '../../../shared/ui/Gap';
+import { useEffect, useState } from 'react';
+import { getSummary } from '@/api/summary';
+import { Summary } from '../types';
 
 interface BalanceItemProps {
   label: string;
@@ -22,18 +25,33 @@ function BalanceItem({ label, amount, type }: BalanceItemProps) {
 }
 
 export function BalanceCard() {
+  const [data, setData] = useState<Summary | null>(null);
+
+  useEffect(() => {
+    const loadSummary = async () => {
+      try {
+        const res = await getSummary();
+        setData(res.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    loadSummary();
+  }, []);
+
   return (
     <View style={styles.card}>
       <Text style={styles.totalLabel}>Total Balance</Text>
-      <Text style={styles.totalAmount}>$0.00</Text>
+      <Text style={styles.totalAmount}>${Math.abs(data?.balance ?? 0).toFixed(2)}</Text>
       <Gap height={10} />
       <View style={styles.balanceRow}>
         <View style={styles.balanceRowLeft}>
-          <BalanceItem label="Income" amount={0} type="income" />
+          <BalanceItem label="Income" amount={data?.income ?? 0} type="income" />
         </View>
         <View style={styles.verticalDivider} />
         <View style={styles.balanceRowRight}>
-          <BalanceItem label="Expenses" amount={0} type="expense" />
+          <BalanceItem label="Expenses" amount={data?.expenses ?? 0} type="expense" />
         </View>
       </View>
     </View>
