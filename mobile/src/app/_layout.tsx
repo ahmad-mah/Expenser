@@ -28,8 +28,12 @@ export default function RootLayout() {
               contentStyle: {
                 backgroundColor: '#fff8f3',
               },
+              animation: 'slide_from_right',
             }}
-          />
+          >
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(home)" />
+          </Stack>
         </KeyboardProvider>
       </ClerkProvider>
     </>

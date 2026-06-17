@@ -17,6 +17,7 @@ export default function AuthRoutesLayout() {
       initialRouteName="sign-in"
       screenOptions={{
         headerShown: false,
+        animation: 'simple_push',
       }}
     />
   );

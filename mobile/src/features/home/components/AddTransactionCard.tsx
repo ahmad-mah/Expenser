@@ -55,6 +55,7 @@ export function AddTransactionCard() {
           placeholder="Transaction Title"
           placeholderTextColor="#aaa"
           value={text}
+          keyboardType="decimal-pad"
           onChangeText={(val) => setText(val)}
         />
       </View>

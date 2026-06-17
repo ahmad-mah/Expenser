@@ -11,5 +11,5 @@ export default function Layout() {
     return <Redirect href="/sign-in" />;
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return <Stack screenOptions={{ headerShown: false, animation: 'ios_from_right' }} />;
 }
