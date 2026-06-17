@@ -1,10 +1,12 @@
 import { Image, View, Text, Pressable, StyleSheet } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useUserSession } from '../hooks/useUserSession';
 
 export function HomeHeader() {
   const { displayName, signOut } = useUserSession();
+  const router = useRouter();
 
   return (
     <View style={styles.row}>
@@ -21,7 +23,7 @@ export function HomeHeader() {
         </View>
       </View>
       <View style={styles.rightSection}>
-        <Pressable style={styles.addButton}>
+        <Pressable style={styles.addButton} onPress={() => router.push('/add-transaction')}>
           <Ionicons name="add" size={22} color="#fff" />
           <Text style={styles.addButtonText}>Add</Text>
         </Pressable>
