@@ -6,7 +6,7 @@ const getAll = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      result,
+      data: result,
     });
   } catch (error) {
     return res.status(500).json({

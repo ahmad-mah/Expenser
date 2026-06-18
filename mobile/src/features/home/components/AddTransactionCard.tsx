@@ -1,24 +1,11 @@
 import { useState } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet, LayoutAnimation } from 'react-native';
+import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
-interface Category {
-  key: string;
-  label: string;
-  icon: keyof typeof Ionicons.glyphMap;
-}
-
-const categories: Category[] = [
-  { key: 'food', label: 'Food', icon: 'restaurant-outline' },
-  { key: 'transport', label: 'Transport', icon: 'car-outline' },
-  { key: 'shopping', label: 'Shopping', icon: 'bag-outline' },
-  { key: 'entertainment', label: 'Entertainment', icon: 'tv-outline' },
-  { key: 'bills', label: 'Bills', icon: 'receipt-outline' },
-  { key: 'salary', label: 'Salary', icon: 'wallet-outline' },
-];
+import { CategoryPicker } from '@/features/categories/components/CategoryPicker';
 
 export function AddTransactionCard() {
   const [isIncome, setIsIncome] = useState(false);
+  const [amount, setAmount] = useState('');
   const [text, setText] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('food');
 
@@ -43,10 +30,18 @@ export function AddTransactionCard() {
 
       <View style={styles.amountRow}>
         <Ionicons name="logo-usd" size={28} color="#413a35" />
-        <Text style={styles.amountValue}>0.00</Text>
+        <TextInput
+          style={styles.amountInput}
+          placeholder="0.00"
+          placeholderTextColor="rgba(139, 89, 63, 0.6)"
+          value={amount}
+          keyboardType="decimal-pad"
+          onChangeText={(text) => {
+            setAmount(text.replace(/[^0-9.]/g, ''));
+          }}
+          inputMode="numeric"
+        />
       </View>
-
-      <View style={styles.divider} />
 
       <View style={styles.inputContainer}>
         <Ionicons name="create-outline" size={18} color="#8b593f" />
@@ -60,32 +55,7 @@ export function AddTransactionCard() {
         />
       </View>
 
-      <View style={styles.categoryHeader}>
-        <Ionicons name="pricetag-outline" size={16} color="#8b593f" />
-        <Text style={styles.categoryTitle}>Category</Text>
-      </View>
-
-      <View style={styles.categoryRow}>
-        {categories.map((cat) => {
-          const isActive = selectedCategory === cat.key;
-          return (
-            <Pressable
-              key={cat.key}
-              style={[styles.categoryButton, isActive && styles.categoryButtonActive]}
-              onPress={() => {
-                LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
-
-                return setSelectedCategory(cat.key);
-              }}
-            >
-              <Ionicons name={cat.icon} size={18} color={isActive ? '#fff' : '#8b593f'} />
-              <Text style={[styles.categoryLabel, isActive && styles.categoryLabelActive]}>
-                {cat.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+      <CategoryPicker selected={selectedCategory} onSelect={setSelectedCategory} />
     </View>
   );
 }
@@ -132,19 +102,19 @@ const styles = StyleSheet.create({
   },
   amountRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+    alignItems: 'baseline',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    paddingBottom: 16,
   },
-  amountValue: {
+  amountInput: {
+    flex: 1,
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#8b593f',
-    opacity: 0.75,
+    color: '#413a35',
+    paddingVertical: 0,
   },
-  divider: {
-    height: 1,
-    backgroundColor: '#f0e8e0',
-  },
+
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -159,41 +129,5 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     color: '#413a35',
-  },
-  categoryHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  categoryTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  categoryRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  categoryButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 25,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    backgroundColor: '#fff',
-  },
-  categoryButtonActive: {
-    backgroundColor: '#8b593f',
-    borderColor: '#8b593f',
-  },
-  categoryLabel: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  categoryLabelActive: {
-    color: '#fff',
   },
 });
