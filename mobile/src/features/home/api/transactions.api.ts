@@ -1,12 +1,7 @@
 import { api } from '@/api/client';
 import { TransactionPayload } from '../types';
 
-const addTransactions = async (payload: TransactionPayload, token: string | null) => {
-  const res = await api.post('/transactions', payload, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+export const addTransactions = async (payload: TransactionPayload) => {
+  const res = await api.post('/transactions', payload);
+  return res.data;
 };
-
-export { addTransactions };

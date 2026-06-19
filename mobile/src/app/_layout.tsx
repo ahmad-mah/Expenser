@@ -3,6 +3,7 @@ import { tokenCache } from '@clerk/expo/token-cache';
 import { Stack } from 'expo-router';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { useFonts } from 'expo-font';
+import { AuthTokenProvider } from '@/providers/AuthTokenProvider';
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
 
@@ -20,19 +21,21 @@ export default function RootLayout() {
   return (
     <>
       <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-        <KeyboardProvider>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              statusBarStyle: 'dark',
-              contentStyle: {
-                backgroundColor: '#fff8f3',
-              },
-            }}
+        <AuthTokenProvider>
+          <KeyboardProvider>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                statusBarStyle: 'dark',
+                contentStyle: {
+                  backgroundColor: '#fff8f3',
+                },
+              }}
 
-            initialRouteName='(auth)'
-          />
-        </KeyboardProvider>
+              initialRouteName='(auth)'
+            />
+          </KeyboardProvider>
+        </AuthTokenProvider>
       </ClerkProvider>
     </>
   );

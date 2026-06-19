@@ -3,7 +3,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { TransactionForm } from '../types';
 import { addTransactions } from '../api/transactions.api';
-import { useAuth } from '@clerk/expo';
 
 interface Props {
   form: TransactionForm;
@@ -11,7 +10,6 @@ interface Props {
 
 export function AddTransactionHeader({ form }: Props) {
   const router = useRouter();
-  const { getToken } = useAuth();
 
   const postData = async () => {
     try {
@@ -20,16 +18,12 @@ export function AddTransactionHeader({ form }: Props) {
         return;
       }
       console.log(form);
-      const token = await getToken();
-      const res = await addTransactions(
-        {
-          title: form.title,
-          amount: Number(form.amount),
-          category_id: form.category!,
-          type: form.isIncome ? 'income' : 'expenses',
-        },
-        token
-      );
+      await addTransactions({
+        title: form.title,
+        amount: Number(form.amount),
+        category_id: form.category!,
+        type: form.isIncome ? 'income' : 'expenses',
+      });
 
       router.back();
     } catch (error) {
