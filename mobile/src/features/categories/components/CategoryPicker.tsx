@@ -6,7 +6,7 @@ import { getCategory } from '../api/category.api';
 import Category from '../types';
 
 interface CategoryPickerProps {
-  selected: string;
+  selected: string | null;
   onSelect: (key: string) => void;
 }
 

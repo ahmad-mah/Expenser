@@ -12,7 +12,7 @@ const create = async (data, userId) => {
   if (!data.type) throw new Error('Type is required');
 
   // 2. enforce allowed types (business rule)
-  if (!['income', 'expense'].includes(data.type)) {
+  if (!['income', 'expenses'].includes(data.type)) {
     throw new Error('Invalid transaction type');
   }
 

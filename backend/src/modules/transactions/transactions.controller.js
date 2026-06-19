@@ -4,7 +4,6 @@ import { getAuth } from '@clerk/express';
 const getAll = async (req, res) => {
   try {
     const { userId } = getAuth(req);
-
     const result = await service.getAll(userId);
 
     return res.json({
@@ -21,6 +20,8 @@ const getAll = async (req, res) => {
 const create = async (req, res) => {
   try {
     const { userId } = getAuth(req);
+    console.log('USER ID:', userId);
+    console.log('hola', req.headers.authorization);
 
     const result = await service.create(req.body, userId);
 
@@ -29,9 +30,17 @@ const create = async (req, res) => {
       data: result[0],
     });
   } catch (error) {
+    // return res.status(400).json({
+    //   success: false,
+    //   error: error.message,
+    // });
+
+    console.error(error);
+
     return res.status(400).json({
       success: false,
-      error: err.message,
+      error: error.message,
+      // stack: error.stack,
     });
   }
 };

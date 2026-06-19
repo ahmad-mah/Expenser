@@ -1,30 +1,34 @@
-import { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CategoryPicker } from '@/features/categories/components/CategoryPicker';
+import { TransactionForm } from '../types';
 
-export function AddTransactionCard() {
-  const [isIncome, setIsIncome] = useState(false);
-  const [amount, setAmount] = useState('');
-  const [text, setText] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('food');
+interface Props {
+  form: TransactionForm;
+  updateForm: (partial: Partial<TransactionForm>) => void;
+}
 
+export function AddTransactionCard({ form, updateForm }: Props) {
   return (
     <View style={styles.card}>
       <View style={styles.typeRow}>
         <Pressable
-          style={[styles.typeButton, !isIncome && styles.typeButtonActive]}
-          onPress={() => setIsIncome(false)}
+          style={[styles.typeButton, !form.isIncome && styles.typeButtonActive]}
+          onPress={() => updateForm({ isIncome: false })}
         >
-          <Ionicons name="arrow-down-circle" size={20} color={!isIncome ? '#fff' : '#d32f2f'} />
-          <Text style={[styles.typeText, !isIncome && styles.typeTextActive]}>Expense</Text>
+          <Ionicons
+            name="arrow-down-circle"
+            size={20}
+            color={!form.isIncome ? '#fff' : '#d32f2f'}
+          />
+          <Text style={[styles.typeText, !form.isIncome && styles.typeTextActive]}>Expense</Text>
         </Pressable>
         <Pressable
-          style={[styles.typeButton, isIncome && styles.typeButtonActive]}
-          onPress={() => setIsIncome(true)}
+          style={[styles.typeButton, form.isIncome && styles.typeButtonActive]}
+          onPress={() => updateForm({ isIncome: true })}
         >
-          <Ionicons name="arrow-up-circle" size={20} color={isIncome ? '#fff' : '#2e7d32'} />
-          <Text style={[styles.typeText, isIncome && styles.typeTextActive]}>Income</Text>
+          <Ionicons name="arrow-up-circle" size={20} color={form.isIncome ? '#fff' : '#2e7d32'} />
+          <Text style={[styles.typeText, form.isIncome && styles.typeTextActive]}>Income</Text>
         </Pressable>
       </View>
 
@@ -34,10 +38,10 @@ export function AddTransactionCard() {
           style={styles.amountInput}
           placeholder="0.00"
           placeholderTextColor="rgba(139, 89, 63, 0.6)"
-          value={amount}
+          value={form.amount}
           keyboardType="decimal-pad"
           onChangeText={(text) => {
-            setAmount(text.replace(/[^0-9.]/g, ''));
+            updateForm({ amount: text.replace(/[^0-9.]/g, '') });
           }}
           inputMode="numeric"
         />
@@ -49,13 +53,12 @@ export function AddTransactionCard() {
           style={styles.input}
           placeholder="Transaction Title"
           placeholderTextColor="#aaa"
-          value={text}
-          keyboardType="decimal-pad"
-          onChangeText={(val) => setText(val)}
+          value={form.title}
+          onChangeText={(val) => updateForm({ title: val })}
         />
       </View>
 
-      <CategoryPicker selected={selectedCategory} onSelect={setSelectedCategory} />
+      <CategoryPicker selected={form.category} onSelect={(id) => updateForm({ category: id })} />
     </View>
   );
 }

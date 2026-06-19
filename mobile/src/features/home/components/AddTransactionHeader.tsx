@@ -1,9 +1,41 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { TransactionForm } from '../types';
+import { addTransactions } from '../api/transactions.api';
+import { useAuth } from '@clerk/expo';
 
-export function AddTransactionHeader() {
+interface Props {
+  form: TransactionForm;
+}
+
+export function AddTransactionHeader({ form }: Props) {
   const router = useRouter();
+  const { getToken } = useAuth();
+
+  const postData = async () => {
+    try {
+      if (!form.title || !form.amount || !form.category) {
+        Alert.alert('Incomplete form', 'Please fill in all fields before saving.');
+        return;
+      }
+      console.log(form);
+      const token = await getToken();
+      const res = await addTransactions(
+        {
+          title: form.title,
+          amount: Number(form.amount),
+          category_id: form.category!,
+          type: form.isIncome ? 'income' : 'expenses',
+        },
+        token
+      );
+
+      router.back();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <View style={styles.row}>
@@ -11,7 +43,7 @@ export function AddTransactionHeader() {
         <Ionicons name="arrow-back" size={24} color="#413a35" />
       </Pressable>
       <Text style={styles.title}>New Transaction</Text>
-      <Pressable style={styles.saveButton}>
+      <Pressable style={styles.saveButton} onPress={postData}>
         <Text style={styles.saveText}>Save</Text>
         <Ionicons name="checkmark" size={18} color="#8b593f" />
       </Pressable>

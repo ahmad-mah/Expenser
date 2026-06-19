@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS transactions (
   title TEXT NOT NULL,
   amount NUMERIC(12,2) NOT NULL,
 
-  type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
+  type TEXT NOT NULL CHECK (type IN ('income', 'expenses')),
 
   category_id INT REFERENCES categories(id) ON DELETE SET NULL,
 
